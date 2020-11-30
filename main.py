@@ -1,16 +1,23 @@
-# This is a sample Python script.
+import tensorflow as tf
+import numpy as np
+import random
+import math
+from ENV import ENVIRONMENT
+import  matplotlib.pyplot as plt
+from DQN import Qnetwork
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+NUMA = 5
+NUMB = 10
+LENTH = 500
+HEITH = 500
+
+N = 20000
+
+Qnetwork = Qnetwork(NUMA,NUMB)
+Env = ENVIRONMENT(NUMA,NUMB)
+
+Reward = []
+R_total = 0
+Loss = []
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
