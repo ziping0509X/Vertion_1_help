@@ -9,7 +9,7 @@ from collections import  deque
 # 生成A、B类用户的坐标、相互之间的距离
 # 根据以上数据，生成path_loss\shadow\fastfading的数据(考虑只用path_loss)
 # 是坐标变动以后，仍然有学习效果？还是只能在指定坐标下面一步步优化到max
-# 确定state_input、get_reward（11月30日）
+# 确定state_input、get_reward（11月30日15点50分）
 #============================
 
 GAMMA = 0.8
