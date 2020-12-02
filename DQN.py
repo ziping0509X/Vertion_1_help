@@ -19,8 +19,6 @@ FINAL_EPSILON = 0.0
 INITIAL_EPSILON = 0.8
 REPLAY_MEMORY = 400
 BATCH_SIZE = 128
-SENSOR_NUM = 2
-ACTION_NUM = 5
 
 class Qnetwork:
 
@@ -28,7 +26,9 @@ class Qnetwork:
         self.step = 0
         self.epsilon = FINAL_EPSILON
         self.numA = NUMA
+        self.numRB = self.numA
         self.numB = NUMB
+        self.state_num = self.numA + self.numB * self.numB
         self.hidden1 = 64
         self.hidden2 = 128
         self.hidden3 = 128  #每个用户有5 * 3 = 15个动作可以选择
@@ -36,6 +36,9 @@ class Qnetwork:
         self.power_list = [10, 15, 23]
         self.replayMemory = deque()
         self.createQNetwork()
+        self.action_all = np.zeros((self.numB,2))
+
+
 
     def weight_variable(self, shape):
          initial = tf.truncated_normal(shape)
@@ -48,10 +51,10 @@ class Qnetwork:
     def createQNetwork(self):
 
         #需要feed的数据是state和action
-        self.stateInput = tf.placeholder("float", [None, self.sensor_num])
+        self.stateInput = tf.placeholder("float", [None, self.state_num])
         #self.actionInput = tf.placeholder("float", [None, self.action_num])
 
-        W_fc1 = self.weight_variable([self.sensor_num, self.hidden1])
+        W_fc1 = self.weight_variable([self.state_num, self.hidden1])
         b_fc1 = self.bias_variable([self.hidden1])
 
         W_fc2 = self.weight_variable([self.hidden1, self.hidden2])
@@ -87,12 +90,12 @@ class Qnetwork:
         minibatch = random.sample(self.replayMemory,BATCH_SIZE)
         state_batch = [data[0] for data in minibatch]
         state_batch = np.array(state_batch)
-        state_batch = state_batch.reshape(BATCH_SIZE, self.sensor_num)
+        state_batch = state_batch.reshape(BATCH_SIZE, self.state_num)
         action_batch = [data[2] for data in minibatch]
         reward_batch = [data[3] for data in minibatch]
         nextState_batch = [data[1] for data in minibatch]
         nextState_batch = np.array(nextState_batch)
-        nextState_batch = nextState_batch.reshape(BATCH_SIZE,self.sensor_num)
+        nextState_batch = nextState_batch.reshape(BATCH_SIZE,self.state_num)
         Qvalue_T_batch = []
         Qvalue_batch = self.Qvalue.eval(feed_dict={self.stateInput:nextState_batch})
 
@@ -124,7 +127,7 @@ class Qnetwork:
             action_index = np.argmax(Qvalue)
             print([action_index])
             action[action_index] = 1
-        if self.epsilon > FINAL_EPSILON and self.timeStep > OBSERVE:
+        if self.epsilon > FINAL_EPSILON and self.step > OBSERVE:
             self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
         return action #这里返回的action是一个数组，而不是一个数字
