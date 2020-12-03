@@ -10,6 +10,7 @@ from collections import  deque
 # 根据以上数据，生成path_loss\shadow\fastfading的数据(考虑只用path_loss)
 # 是坐标变动以后，仍然有学习效果？还是只能在指定坐标下面一步步优化到max
 # 确定state_input、get_reward（11月30日15点50分）
+# 开始整个代码的调试（12月3日）
 #============================
 
 GAMMA = 0.8
@@ -28,7 +29,7 @@ class Qnetwork:
         self.numA = NUMA
         self.numRB = self.numA
         self.numB = NUMB
-        self.state_num = self.numA + self.numB * self.numB
+        self.state_num = self.numA + self.numB
         self.hidden1 = 64
         self.hidden2 = 128
         self.hidden3 = 128  #每个用户有5 * 3 = 15个动作可以选择
@@ -36,7 +37,7 @@ class Qnetwork:
         self.power_list = [10, 15, 23]
         self.replayMemory = deque()
         self.createQNetwork()
-        self.action_all = np.zeros((self.numB,2))
+        self.action_all = np.zeros((self.numB,2),dtype=int)
 
 
 
@@ -105,6 +106,11 @@ class Qnetwork:
         for i in range(0,BATCH_SIZE):
             Qvalue_T_batch.append(reward_batch[i]+GAMMA * np.max(Qvalue_batch))
 
+        Q_TEMP = np.array(Qvalue_T_batch)
+
+        print("Q_T")
+        print(np.shape(Q_TEMP))
+
         _, self.loss = self.session.run([self.trainStep,self.cost],feed_dict={
                         self.actionInput : action_batch,
                         self.stateInput : state_batch,
@@ -130,7 +136,7 @@ class Qnetwork:
         if self.epsilon > FINAL_EPSILON and self.step > OBSERVE:
             self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
-        return action #这里返回的action是一个数组，而不是一个数字
+        return action,action_index #这里返回的action是一个数组，而不是一个数字
 
     def getLoss(self,currentState,nextState,action,reward):
         loss = 0 #因此，time[0,OBSERVE]内的过程是没有trainQnetwork这个过程的
