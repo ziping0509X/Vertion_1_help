@@ -9,6 +9,8 @@ LENTH = 500
 HEITH = 500
 positionBS = [250,250]
 
+# 12月3号更新版本上传不到GITHUB
+
 class ENVIRONMENT:
     def __init__(self,NUMA,NUMB):
         self.numA = NUMA
@@ -134,13 +136,14 @@ class ENVIRONMENT:
                                 self.pathlossB[j] -
                                 self.B_Ant_G -
                                 self.B_Noise_g))
-                #计算A类用户给B类用户的同频干扰,少一个A用户给B用户的路劲损耗
+                #计算A类用户给B类用户的同频干扰
                 BB_interference[j] += \
                     10**(0.1* (self.A_power_dB -
                                self.pathlossA_B[i,j] +
                                self.A_Ant_G +
                                self.A_Noise_g))
 
+                #计算B类用户给B类用户的同频干扰
                 for k in range(j+1,len(indexes)):
                     BB_interference[j] += \
                         10**(0.1 * (self.B_power_list[Power_select[indexes[k]]] -
@@ -155,8 +158,59 @@ class ENVIRONMENT:
 
             self.B_interference = BB_interference + self.sig2
 
-            #下面根据所得到的signal_power和interference计算通信的比特率
-            B_C = np.zeros((self.numB))
+        #下面根据所得到的signal_power和interference计算通信的比特率
+        B_C = np.zeros((self.numB))
+        for i in range(len(B_C)):
+            B_C[i] = np.log2(1 + B_signal[i] / (BB_interference[i] + self.sig2))
+
+        B_C_SUM = 0
+        for i in range(len(B_C)):
+            B_C_SUM += B_C[i]
+
+        AB_interference = np.zeros(self.numA)
+        A_signal = np.zeros(self.numA)
+        for i in range(len(self.numA)):
+            A_signal[i] = 10**(0.1*(self.A_power_dB - self.pathlossA[i] + self.A_Ant_G - self.A_Noise_g))
+        #下面开始计算A类用户的通信比特率
+        for i in range(self.numA):
+            indexes = np.argwhere(RB_select == i)
+            for j in range(len(indexes)):
+                #这里先使用一个简化的用法
+                AB_interference[i] += 10**(0.1*(Power_select[indexes[j]] - self.pathlossA_B[j][i]))
+
+        A_C = np.zeros(self.numA)
+        for i in range(self.numA):
+            A_C[i] = np.log10(1 + A_signal[i] / AB_interference[i])
+        A_C_SUM = 0
+        for i in range(len(A_C)):
+            A_C_SUM += A_C[i]
+
+        lamd = 0.8
+        reward = A_C_SUM + lamd * B_C_SUM
+
+        return reward
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
