@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 import random
-import math
 from collections import  deque
 
 #============================
@@ -15,7 +14,7 @@ from collections import  deque
 
 GAMMA = 0.8
 OBSERVE = 300
-EXPLORE = 180000
+EXPLORE = 4000
 FINAL_EPSILON = 0.0
 INITIAL_EPSILON = 0.8
 REPLAY_MEMORY = 400
@@ -25,7 +24,7 @@ class Qnetwork:
 
     def __init__(self,NUMA,NUMB):
         self.step = 0
-        self.epsilon = FINAL_EPSILON
+        self.epsilon = INITIAL_EPSILON
         self.numA = NUMA
         self.numRB = self.numA
         self.numB = NUMB
@@ -101,15 +100,15 @@ class Qnetwork:
         Qvalue_batch = self.Qvalue.eval(feed_dict={self.stateInput:nextState_batch})
 
         print("train Q network......")
-        print("-------------------------")
+        #print("-------------------------")
 
         for i in range(0,BATCH_SIZE):
             Qvalue_T_batch.append(reward_batch[i]+GAMMA * np.max(Qvalue_batch))
 
         Q_TEMP = np.array(Qvalue_T_batch)
 
-        print("Q_T")
-        print(np.shape(Q_TEMP))
+        #print("Q_T")
+        #print(np.shape(Q_TEMP))
 
         _, self.loss = self.session.run([self.trainStep,self.cost],feed_dict={
                         self.actionInput : action_batch,
@@ -117,6 +116,7 @@ class Qnetwork:
                         self.Qvalue_T : Qvalue_T_batch})
 
         print("loss is %d" %self.loss)
+        print("**********************************************")
 
         return self.loss
 
@@ -126,12 +126,12 @@ class Qnetwork:
             action_index = random.randrange(self.action_num)
             action[action_index] = 1
             print("use random strategy:")
-            print(action_index)
+            #print(action_index)
         else:
             Qvalue = self.Qvalue.eval(feed_dict={self.stateInput:stateInput}) #有了self前缀才可以在class中无差别地调用
             print("use max Q-value:")
             action_index = np.argmax(Qvalue)
-            print([action_index])
+            #print([action_index])
             action[action_index] = 1
         if self.epsilon > FINAL_EPSILON and self.step > OBSERVE:
             self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE

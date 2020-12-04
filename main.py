@@ -6,6 +6,7 @@ from ENV import ENVIRONMENT
 import  matplotlib.pyplot as plt
 from DQN import Qnetwork
 import pandas as pd
+
 #============================
 # 二维平面是500*500
 # 生成A、B类用户的坐标、相互之间的距离
@@ -13,9 +14,8 @@ import pandas as pd
 # 是坐标变动以后，仍然有学习效果？还是只能在指定坐标下面一步步优化到max
 # 确定state_input、get_reward（11月30日15点50分）
 # 开始使用自己的的架构写这个程序（12月2日15点01分）
+# 开始对version0.9调参（12月4号9点02分）
 #============================
-
-
 NUMA = 5
 NUMRB = NUMA
 NUMB = 10
@@ -34,29 +34,28 @@ Reward = []
 R_total = 0
 Loss = []
 
-for Time in range(0,N-1): #这里就不需要在循环的末尾写time自加1了
-    print("iterations is: %d" %Time)
+for Time in range(0,1):
     if Time == 0:
         Reward = []
         R_total = 0
         Loss = []
     for i in range(NUMB):
 
-        state_old = Env.get_state() #由于在这个简单模型中，state从未发生过变化，因此就不对输入进行要求
-        #print("state_now is:")
-        #print(state_old)
+        print("**********************************************")
+        print("the iterations_small %d of iterations_big %d:" %(i,Time))
+
+        state_old = Env.get_state()
         action_array,action= Qnetwork.getAction(actionNum=NUMA*3,stateInput=state_old)
-        #print(action)
-        #print("Qnetwork-action_all is:")
-        #print(Qnetwork.action_all) #action_all 就应该是整数
         Qnetwork.action_all[i, 1] = action % NUMPOWER
         Qnetwork.action_all[i, 0] = int(np.floor(action / NUMPOWER))
-        print("Qnetwork-action_all is:")
-        print(Qnetwork.action_all)
+
         print("select RB is:")
         print(Qnetwork.action_all[i, 0])
         print("select Power is:")
         print(Qnetwork.action_all[i, 1])
+        print("Qnetwork-action_all is:")
+        print(Qnetwork.action_all)
+
         reward = Env.get_reward(stateinput=state_old,actionall=Qnetwork.action_all,idx=i)
         state_new = Env.get_state()
 
@@ -66,6 +65,10 @@ for Time in range(0,N-1): #这里就不需要在循环的末尾写time自加1了
 
         if not loss == 0:
             Loss.append(loss)
+
+
+plt.plot(Loss)
+plt.show()
 
 # Loss1 = np.array(Loss)
 # data1 = pd.DataFrame(Loss1,columns=['Loss'])

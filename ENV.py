@@ -131,21 +131,13 @@ class ENVIRONMENT:
 
         return self.state_input
 
-    def get_reward(self,stateinput,actionall,idx): #单词循环中给单用户选择动作得到的奖励，如何设置？
+    def get_reward(self,stateinput,actionall,idx): #单次循环中给单用户选择动作得到的奖励，如何设置？
         #action输入的是一个数字，5*3 = 15
-        print("开始调试get_reward================================")
         actionall_1 = actionall.copy()
         RB_select = actionall[:,0] #[1选择的RB，2选择的RB，......,10选择的RB]
-        print("RB_select:")
-        print(RB_select)
         Power_select = actionall[:,1] #[1选择的P，2选择的P，......,10选择的P]
-        print("Power_select:")
-        print(Power_select)
         B_signal = np.zeros(self.numB)
         BB_interference = np.zeros((self.numB))
-        #去掉自己，方便后面大循环
-        #RB_select[idx] = 100
-        #下面开始计算B_signal、BB_interference
 
         for i in range(self.numB): #i指示的是B类用户的序号
 
@@ -155,11 +147,6 @@ class ENVIRONMENT:
 
             for l in range(len(indexes)):
                 indexes_temp[l] = indexes[l][0]
-                #print(indexes[l][0])
-                #print(indexes_temp)
-            #print("indexes_temp is:")
-            #print(indexes_temp)
-            #print(indexes_temp)
             indexes = indexes_temp.copy()
             #print("indexes is:")
             #print(indexes)
@@ -170,8 +157,8 @@ class ENVIRONMENT:
                 #print(indexes[j])
                 B_signal[ indexes[j] ] = \
                     10**(0.1 * (self.B_power_list[ Power_select[indexes[j]] ] - self.pathlossB[indexes[j]] - self.B_Ant_G -self.B_Noise_g))
-                print("B_signal[ indexes[j] ] is:")
-                print(B_signal[ indexes[j] ])
+                #print("B_signal[ indexes[j] ] is:")
+                #print(B_signal[ indexes[j] ])
                 #计算A类用户给B类用户的同频干扰
                 #pathloss_A_B 是一个10*5的数组
                 # BB_interference[indexes[j]] += \
@@ -184,7 +171,7 @@ class ENVIRONMENT:
                     10 ** (0.1 * (self.A_power_dB -
                                   self.A_Ant_G +
                                   self.A_Noise_g))
-                print(BB_interference[indexes[j]])
+                #print(BB_interference[indexes[j]])
 
                 #计算B类用户给B类用户的同频干扰
                 for k in range(j+1,len(indexes)):
@@ -200,15 +187,11 @@ class ENVIRONMENT:
                                       self.B_Noise_g))
 
         self.B_interference = BB_interference + self.sig2
-        print(B_signal)
-        print(self.B_interference)
 
         #下面根据所得到的signal_power和interference计算通信的比特率
         B_C = np.zeros((self.numB))
         for i in range(len(B_C)):
             B_C[i] = np.log2(1 + B_signal[i] / (BB_interference[i] + self.sig2))
-        print("B_C is:")
-        print(B_C)
 
         B_C_SUM = 0
         for i in range(len(B_C)):
@@ -226,54 +209,24 @@ class ENVIRONMENT:
                 AB_interference[i] += 10**(0.1*(Power_select[indexes[j]] - self.pathlossA_B[j][i]))
 
         AB_interference = AB_interference+ self.sig2
-
-        print("*****************")
-
-        print(A_signal)
-        print(AB_interference)
-
         A_C = np.zeros(self.numA)
         for i in range(self.numA):
             A_C[i] = np.log10(1 + A_signal[i] / AB_interference[i])
 
         print("A_C is:")
         print(A_C)
+        print("B_C is:")
+        print(B_C)
+
         A_C_SUM = 0
         for i in range(len(A_C)):
             A_C_SUM += A_C[i]
 
-        lamd = 0.8
+        lamd = 0
         reward = A_C_SUM + lamd * B_C_SUM
 
-        print("reward is:")
-        #print(A_C_SUM)
-        #print(B_C_SUM)
-        print(reward)
+        print("A_C_SUM and B_C_SUM is:%d, %d"%(A_C_SUM,B_C_SUM))
+
+        print("reward is %d:"%reward)
 
         return reward
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
