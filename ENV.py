@@ -9,7 +9,7 @@ LENTH = 500
 HEITH = 500
 positionBS = [250,250]
 
-# 12月3号更新版本上传不到GITHUB
+# 12月3号更新版本上传不到GITHUB  V0.915
 
 class ENVIRONMENT:
     def __init__(self,NUMA,NUMB):
