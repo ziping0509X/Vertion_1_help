@@ -10,6 +10,8 @@ HEITH = 500
 positionBS = [250,250]
 
 # 12月3号更新版本上传不到GITHUB  V0.915
+# 修改get_pathloss的式子
+# L(dB) = 0.837 + 20log10(d/10)
 
 class ENVIRONMENT:
     def __init__(self,NUMA,NUMB):
@@ -42,6 +44,16 @@ class ENVIRONMENT:
         self.sig2_dB = -114
         self.sig2 = 10 ** (self.sig2_dB / 10)
         #得到了A\B类用户的坐标、相互之间的距离、路径损耗数值
+
+    def get_A_ini_C_SUM(self):
+        A_SUM = 0
+        A_C = np.zeros(len(self.positionA))
+        for i in range(len(self.positionA)):
+            A_SING = 10**(0.1*(self.A_power_dB - self.pathlossA[i] + self.A_Ant_G - self.A_Noise_g))
+            A_C[i] = 150000 * np.log10(1 + A_SING / self.sig2)
+            A_SUM += 150000 * np.log10(1 + A_SING / self.sig2)
+        return A_C,A_SUM
+
 
     def add_users(self,n):
         position = np.zeros((n,2))
@@ -84,7 +96,8 @@ class ENVIRONMENT:
         PathLoss = np.zeros(len(positionA))
         for i in range(len(positionA)):
             #PathLoss[i] = 128.1 + 37.6 * np.log10(np.sqrt(distanceA[i] ** 2 + (25 - 1.5) ** 2) / 1000)
-            PathLoss[i] = 37.6 * np.log10(np.sqrt(distanceA[i] ** 2 + (25 - 1.5) ** 2) / 1000)
+            PathLoss[i] = 0.837 + 20 * np.log10(distanceA[i] / 10)
+            #PathLoss[i] = 37.6 * np.log10(np.sqrt(distanceA[i] ** 2 + (25 - 1.5) ** 2) / 1000)
             #print(PathLoss_temp)
             #print(PathLoss[i])
 
@@ -98,7 +111,8 @@ class ENVIRONMENT:
         for i in range(len(positionB)):
             for j in range(len(positionB)):
                 #PathLoss[i,j] = 128.1 + 37.6 * np.log10(math.sqrt(distanceB[i,j] ** 2 + (25 - 1.5) ** 2) / 1000)
-                PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distanceB[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                #PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distanceB[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                PathLoss[i,j] = 0.837 + 20 * np.log10(distanceB[i,j] / 10)
 
         return PathLoss
 
@@ -108,7 +122,8 @@ class ENVIRONMENT:
         for i in range (self.numB):
             for j in range(self.numA):
                 #PathLoss[i,j] = 128.1 + 37.6 * np.log10(math.sqrt(distance_A_B[i,j] ** 2 + (25 - 1.5) ** 2) / 1000)
-                PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distance_A_B[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                #PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distance_A_B[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                PathLoss[i, j] = 0.837 + 20 * np.log10(distance_A_B[i, j] / 10)
 
         return PathLoss
 
@@ -118,7 +133,8 @@ class ENVIRONMENT:
         for i in range(self.numB):
             for j in range(self.numB):
                 #PathLoss[i, j] = 128.1 + 37.6 * np.log10(math.sqrt(distance_A_B[i,j] ** 2 + (25 - 1.5) ** 2) / 1000)
-                PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distance_A_B[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                #PathLoss[i, j] = 37.6 * np.log10(math.sqrt(distance_A_B[i, j] ** 2 + (25 - 1.5) ** 2) / 1000)
+                PathLoss[i, j] = 0.837 + 20 * np.log10(distance_A_B[i, j] / 10)
 
         return PathLoss
 
@@ -156,7 +172,7 @@ class ENVIRONMENT:
                 #print("here")
                 #print(indexes[j])
                 B_signal[ indexes[j] ] = \
-                    10**(0.1 * (self.B_power_list[ Power_select[indexes[j]] ] - self.pathlossB[indexes[j]] - self.B_Ant_G -self.B_Noise_g))
+                    10**(0.1 * (self.B_power_list[ Power_select[indexes[j]] ] - self.pathlossB[indexes[j]] + self.B_Ant_G -self.B_Noise_g))
                 #print("B_signal[ indexes[j] ] is:")
                 #print(B_signal[ indexes[j] ])
                 #计算A类用户给B类用户的同频干扰
@@ -167,9 +183,10 @@ class ENVIRONMENT:
                 #                self.A_Ant_G +
                 #                self.A_Noise_g))
 
+                #这种算法导致A类用户所有的功率都投射在了B类用户身上
                 BB_interference[indexes[j]] += \
-                    10 ** (0.1 * (self.A_power_dB -
-                                  self.A_Ant_G +
+                    10 ** (0.1 * (self.A_power_dB +
+                                  self.A_Ant_G - self.pathlossA_B[indexes[j],i] -
                                   self.A_Noise_g))
                 #print(BB_interference[indexes[j]])
 
@@ -191,7 +208,7 @@ class ENVIRONMENT:
         #下面根据所得到的signal_power和interference计算通信的比特率
         B_C = np.zeros((self.numB))
         for i in range(len(B_C)):
-            B_C[i] = 150000 * np.log2(1 + B_signal[i] / (BB_interference[i] + self.sig2))
+            B_C[i] = 150000 * np.log2(1 + B_signal[i] / (self.B_interference[i] + self.sig2))
 
         B_C_SUM = 0
         for i in range(len(B_C)):
@@ -222,12 +239,12 @@ class ENVIRONMENT:
         for i in range(len(A_C)):
             A_C_SUM += A_C[i]
 
-        lamd = 0
+        lamd = 0.8
         reward = A_C_SUM + lamd * B_C_SUM
 
         print("A_C_SUM and B_C_SUM is:%d bit/s, %d bit/s"%(A_C_SUM,B_C_SUM))
-        reward_1 = reward/1000
+        reward = reward/10000
 
-        print("reward is %d kbit/s:"%reward_1)
+        print("reward is %d 00kbit/s:"%reward)
 
         return reward

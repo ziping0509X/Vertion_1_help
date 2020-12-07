@@ -34,12 +34,17 @@ Reward = []
 R_total = 0
 Loss = []
 
-for Time in range(0,1):
+for Time in range(0,100):
     if Time == 0:
         Reward = []
         R_total = 0
         Loss = []
     for i in range(NUMB):
+
+        A_C,A_SUM = Env.get_A_ini_C_SUM()
+        print(A_C)
+        print(A_SUM)
+
 
         print("**********************************************")
         print("the iterations_small %d of iterations_big %d:" %(i,Time))

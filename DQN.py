@@ -130,6 +130,7 @@ class Qnetwork:
         else:
             Qvalue = self.Qvalue.eval(feed_dict={self.stateInput:stateInput}) #有了self前缀才可以在class中无差别地调用
             print("use max Q-value:")
+            print(Qvalue)
             action_index = np.argmax(Qvalue)
             #print([action_index])
             action[action_index] = 1
