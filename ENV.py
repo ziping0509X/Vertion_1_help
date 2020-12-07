@@ -32,7 +32,7 @@ class ENVIRONMENT:
         self.pathlossB_B = self.get_pathlossBB(self.distance_B_B)
 
         self.A_power_dB = 23
-        self.B_power_list = [10,20,46]
+        self.B_power_list = [5,10,23]
         self.B_power_list = np.array(self.B_power_list)
         self.A_Ant_G = 8
         self.A_Noise_g = 5
@@ -191,7 +191,7 @@ class ENVIRONMENT:
         #下面根据所得到的signal_power和interference计算通信的比特率
         B_C = np.zeros((self.numB))
         for i in range(len(B_C)):
-            B_C[i] = np.log2(1 + B_signal[i] / (BB_interference[i] + self.sig2))
+            B_C[i] = 150000 * np.log2(1 + B_signal[i] / (BB_interference[i] + self.sig2))
 
         B_C_SUM = 0
         for i in range(len(B_C)):
@@ -211,7 +211,7 @@ class ENVIRONMENT:
         AB_interference = AB_interference+ self.sig2
         A_C = np.zeros(self.numA)
         for i in range(self.numA):
-            A_C[i] = np.log10(1 + A_signal[i] / AB_interference[i])
+            A_C[i] = 150000 * np.log10(1 + A_signal[i] / AB_interference[i])
 
         print("A_C is:")
         print(A_C)
@@ -225,8 +225,9 @@ class ENVIRONMENT:
         lamd = 0
         reward = A_C_SUM + lamd * B_C_SUM
 
-        print("A_C_SUM and B_C_SUM is:%d, %d"%(A_C_SUM,B_C_SUM))
+        print("A_C_SUM and B_C_SUM is:%d bit/s, %d bit/s"%(A_C_SUM,B_C_SUM))
+        reward_1 = reward/1000
 
-        print("reward is %d:"%reward)
+        print("reward is %d kbit/s:"%reward_1)
 
         return reward
