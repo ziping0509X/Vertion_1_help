@@ -24,32 +24,33 @@ LENTH = 500
 HEITH = 500
 BS_POSITION = [250, 250]
 
-N = 20000
+N = 4000
 Time = 0
 
 Qnetwork = Qnetwork(NUMA,NUMB)
 Env = ENVIRONMENT(NUMA,NUMB)
 
 Reward = []
+Reward_single = []
 R_total = 0
 Loss = []
 
-for Time in range(0,100):
+for Time in range(0,N-1):
     if Time == 0:
         Reward = []
         R_total = 0
         Loss = []
     for i in range(NUMB):
 
-        A_C,A_SUM = Env.get_A_ini_C_SUM()
-        print(A_C)
-        print(A_SUM)
+        #A_C,A_SUM = Env.get_A_ini_C_SUM()
+        # print(A_C)
+        # print(A_SUM)
 
 
         print("**********************************************")
         print("the iterations_small %d of iterations_big %d:" %(i,Time))
 
-        state_old = Env.get_state()
+        state_old = Env.get_state_2(index= i)
         action_array,action= Qnetwork.getAction(actionNum=NUMA*3,stateInput=state_old)
         Qnetwork.action_all[i, 1] = action % NUMPOWER
         Qnetwork.action_all[i, 0] = int(np.floor(action / NUMPOWER))
@@ -61,18 +62,27 @@ for Time in range(0,100):
         print("Qnetwork-action_all is:")
         print(Qnetwork.action_all)
 
-        reward = Env.get_reward(stateinput=state_old,actionall=Qnetwork.action_all,idx=i)
-        state_new = Env.get_state()
+        reward = Env.get_reward(actionall=Qnetwork.action_all)
+        state_new = Env.get_state_2(index= i + 1)
+        print("change the descrebetion of state:")
+        print(state_old)
+        print(state_new)
 
         loss = Qnetwork.getLoss(currentState=state_old,nextState=state_new,action=action_array,reward=reward)
+        Reward_single.append(reward)
         R_total += reward
         Reward.append(R_total)
 
         if not loss == 0:
             Loss.append(loss)
-
+    #Qnetwork.action_all = np.zeros((10,2),dtype=int)
 
 plt.plot(Loss)
+
+plt.show()
+
+plt.plot(Reward_single)
+
 plt.show()
 
 # Loss1 = np.array(Loss)

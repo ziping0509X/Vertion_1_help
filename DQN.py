@@ -14,7 +14,7 @@ from collections import  deque
 
 GAMMA = 0.8
 OBSERVE = 300
-EXPLORE = 4000
+EXPLORE = 39000
 FINAL_EPSILON = 0.0
 INITIAL_EPSILON = 0.8
 REPLAY_MEMORY = 400
@@ -28,9 +28,10 @@ class Qnetwork:
         self.numA = NUMA
         self.numRB = self.numA
         self.numB = NUMB
-        self.state_num = self.numA + self.numB
-        self.hidden1 = 64
-        self.hidden2 = 128
+        # self.numA + self.numB
+        self.state_num = 35
+        self.hidden1 = 128
+        self.hidden2 = 256
         self.hidden3 = 128  #每个用户有5 * 3 = 15个动作可以选择
         self.action_num = self.numA * 3
         self.power_list = [10, 15, 23]
