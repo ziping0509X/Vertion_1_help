@@ -16,13 +16,13 @@ import pandas as pd
 # 开始使用自己的的架构写这个程序（12月2日15点01分）
 # 开始对version0.9调参（12月4号9点02分）V0.915
 #============================
-NUMA = 5
+NUMA = 8
 NUMRB = NUMA
 NUMB = 10
 NUMPOWER = 3
-LENTH = 500
-HEITH = 500
-BS_POSITION = [250, 250]
+LENTH = 2000
+HEITH = 2000
+BS_POSITION = [1000, 1000]
 
 N = 4000
 Time = 0
@@ -35,16 +35,16 @@ Reward_single = []
 R_total = 0
 Loss = []
 
-for Time in range(0,N-1):
+for Time in range(0,4000):
     if Time == 0:
         Reward = []
         R_total = 0
         Loss = []
     for i in range(NUMB):
 
-        #A_C,A_SUM = Env.get_A_ini_C_SUM()
-        # print(A_C)
-        # print(A_SUM)
+        A_C,A_SUM = Env.get_A_ini_C_SUM()
+        print(A_C)
+        print(A_SUM)
 
 
         print("**********************************************")
@@ -68,13 +68,24 @@ for Time in range(0,N-1):
         print(state_old)
         print(state_new)
 
-        loss = Qnetwork.getLoss(currentState=state_old,nextState=state_new,action=action_array,reward=reward)
+
+        loss = Qnetwork.getLoss(currentState=state_old, nextState=state_new, action=action_array, reward=reward)
         Reward_single.append(reward)
         R_total += reward
         Reward.append(R_total)
 
         if not loss == 0:
             Loss.append(loss)
+
+
+
+        # loss = Qnetwork.getLoss(currentState=state_old,nextState=state_new,action=action_array,reward=reward)
+        # Reward_single.append(reward)
+        # R_total += reward
+        # Reward.append(R_total)
+        #
+        # if not loss == 0:
+        #     Loss.append(loss)
     #Qnetwork.action_all = np.zeros((10,2),dtype=int)
 
 plt.plot(Loss)
@@ -121,6 +132,8 @@ plt.show()
 #
 # fig = plt.figure(num= 2,figsiz=(12,6))
 # ax1 = fig.add_subplot(122)
+
+
 # ax1.set_xlabel("迭代次数")
 # ax1.set_ylabel("总奖励")
 # ax1.set_title("奖励函数曲线")

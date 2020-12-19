@@ -14,11 +14,11 @@ from collections import  deque
 
 GAMMA = 0.8
 OBSERVE = 300
-EXPLORE = 39000
+EXPLORE = 3900
 FINAL_EPSILON = 0.0
 INITIAL_EPSILON = 0.8
 REPLAY_MEMORY = 400
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 
 class Qnetwork:
 
@@ -29,7 +29,7 @@ class Qnetwork:
         self.numRB = self.numA
         self.numB = NUMB
         # self.numA + self.numB
-        self.state_num = 35
+        self.state_num = 25
         self.hidden1 = 128
         self.hidden2 = 256
         self.hidden3 = 128  #每个用户有5 * 3 = 15个动作可以选择
@@ -116,7 +116,7 @@ class Qnetwork:
                         self.stateInput : state_batch,
                         self.Qvalue_T : Qvalue_T_batch})
 
-        print("loss is %d" %self.loss)
+        print("loss is %f" %self.loss)
         print("**********************************************")
 
         return self.loss

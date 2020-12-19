@@ -3,11 +3,11 @@ import numpy as np
 import random
 import math
 
-NUMA = 5
+NUMA = 8
 NUMB = 10
-LENTH = 1000
-HEITH = 1000
-positionBS = [500,500]
+LENTH = 2000
+HEITH = 2000
+positionBS = [100,100]
 
 # 12月3号更新版本上传不到GITHUB  V0.915
 # 修改get_pathloss的式子
@@ -18,8 +18,8 @@ class ENVIRONMENT:
         self.numA = NUMA
         self.numB = NUMB
 
-        self.positionA = self.add_users(self.numA)
-        self.positionB = self.add_users(self.numB)
+        self.positionA = self.add_users_A(self.numA)
+        self.positionB = self.add_users_B(self.numB)
         self.positionA = np.array(self.positionA)
         self.positionB = np.array(self.positionB)
 
@@ -29,7 +29,11 @@ class ENVIRONMENT:
         self.distance_B_B = self.get_distance_A_B(self.positionB, self.positionB)
 
         self.pathlossA = self.get_pathlossA(self.positionA, self.distanceA)
+        print("pathloss A")
+        print(self.pathlossA)
         self.pathlossB = self.get_pathlossA(self.positionB, self.distanceB)
+        print("pathloss B")
+        print(self.pathlossB)
         self.pathlossA_B = self.get_pathlossAB(self.distance_A_B)
         self.pathlossB_B = self.get_pathlossBB(self.distance_B_B)
 
@@ -42,13 +46,15 @@ class ENVIRONMENT:
         self.A_power_dB = 23
         self.B_power_list = [5,10,23]
         self.B_power_list = np.array(self.B_power_list)
-        self.A_Ant_G = 10
-        self.A_Noise_g = 3
-        self.B_Ant_G = 5
-        self.B_Noise_g = 3
+        self.A_Ant_G = 3
+        self.A_Noise_g = 2
+        self.B_Ant_G = 3
+        self.B_Noise_g = 2
 
         self.sig2_dB = -114
         self.sig2 = 10 ** (self.sig2_dB / 10)
+        print("sig2:")
+        print(self.sig2)
         #得到了A\B类用户的坐标、相互之间的距离、路径损耗数值
 
     def get_A_ini_C_SUM(self):
@@ -56,20 +62,75 @@ class ENVIRONMENT:
         A_C = np.zeros(len(self.positionA))
         for i in range(len(self.positionA)):
             A_SING = 10**(0.1*(self.A_power_dB - self.pathlossA[i] + self.A_Ant_G - self.A_Noise_g))
-            A_C[i] = 150000 * np.log10(1 + A_SING / self.sig2)
-            A_SUM += 150000 * np.log10(1 + A_SING / self.sig2)
+            print(A_SING)
+
+            A_C[i] =   10 * np.log2(1 + A_SING / (150000 * self.sig2))
+            A_SUM +=   10 * np.log2(1 + A_SING / (150000 * self.sig2))
         return A_C,A_SUM
 
 
-    def add_users(self,n):
+    def add_users_A(self,n):
         position = np.zeros((n,2))
-        for i in range(n):
-            ind1 = np.random.randint(0, 1000)
-            ind2 = np.random.randint(0, 1000)
+        for i in range(2):
+            ind1 = np.random.randint(0, 50)
+            ind2 = np.random.randint(0, 50)
 
             #start_position = [ind1, ind2]
             position[i,0] = ind1
             position[i,1] = ind2
+
+        for i in range(2,5):
+            ind1 = np.random.randint(500, 1000)
+            ind2 = np.random.randint(500, 1000)
+
+            #start_position = [ind1, ind2]
+            position[i,0] = ind1
+            position[i,1] = ind2
+
+        for i in range(5,8):
+            ind1 = np.random.randint(1500, 2000)
+            ind2 = np.random.randint(1500, 2000)
+
+            #start_position = [ind1, ind2]
+            position[i,0] = ind1
+            position[i,1] = ind2
+
+        return position
+
+    def add_users_B(self,n):
+        position = np.zeros((n,2))
+        # for i in range(n):
+        #     ind1 = np.random.randint(0, 50)
+        #     ind2 = np.random.randint(0, 50)
+        #
+        #     #start_position = [ind1, ind2]
+        #     position[i,0] = ind1
+        #     position[i,1] = ind2
+
+        for i in range(3):
+            ind1 = np.random.randint(0, 50)
+            ind2 = np.random.randint(0, 50)
+
+            # start_position = [ind1, ind2]
+            position[i, 0] = ind1
+            position[i, 1] = ind2
+
+        for i in range(3, 6):
+            ind1 = np.random.randint(500, 1000)
+            ind2 = np.random.randint(500, 1000)
+
+            # start_position = [ind1, ind2]
+            position[i, 0] = ind1
+            position[i, 1] = ind2
+
+        for i in range(6, 10):
+            ind1 = np.random.randint(1500, 2000)
+            ind2 = np.random.randint(1500, 2000)
+
+            # start_position = [ind1, ind2]
+            position[i, 0] = ind1
+            position[i, 1] = ind2
+
         return position
 
     def get_distanceA(self,positionA):
@@ -156,19 +217,19 @@ class ENVIRONMENT:
 
     def get_state_2(self,index):
         #环境一直是在改变的，并不是一个一成不变的内容，由于之前把pathloss输入、把index输入，都没有准确地表征环境，所以模型根本没有找到映射。
-        state = np.zeros(35)
+        state = np.zeros(25)
         for i in range(5):
             state[i] = index
         for i in range(5,15):
             state[i] = self.B_signal[i-5]
         for i in range(15,25):
             state[i] = self.BB_interference[i-15]
-        for i in range(25,30):
-            state[i] = self.A_signal[i-25]
-        for i in range(30,35):
-            state[i] = self.AB_interference[i-30]
+        # for i in range(25,30):
+        #     state[i] = self.A_signal[i-25]
+        # for i in range(30,35):
+        #     state[i] = self.AB_interference[i-30]
 
-        state = state.reshape((1,35))
+        state = state.reshape((1,25))
 
         return state
 
@@ -285,35 +346,35 @@ class ENVIRONMENT:
 
         RB_selecet = actionall[:, 0]
         Power_select = actionall[:, 1]
-        self.A_signal = np.zeros(self.numA)
-        self.B_signal = np.zeros(self.numB)
+        # self.A_signal = np.zeros(self.numA)
+        # self.B_signal = np.zeros(self.numB)
 
         for i in range(self.numA):  # 一次只处理一个用户
             self.A_signal[i] = 10 ** (0.1 * (self.A_power_dB - self.pathlossA[i] + self.A_Ant_G - self.A_Noise_g))
 
             indexes = np.argwhere(RB_selecet == i)
+            self.AB_interference[i] = 0
             for j in range(len(indexes)):
                 if not indexes[j] == i:
                     self.AB_interference[i] += 10 ** (0.1 * (Power_select[indexes[j]] - self.pathlossA_B[j][i]))
 
-        AB_interference = self.AB_interference + self.sig2
+        AB_interference = self.AB_interference
         A_C = np.zeros(self.numA)
 
         for i in range(self.numA):
-            A_C[i] = np.log10(1 + self.A_signal[i] / AB_interference[i])
+            A_C[i] =  10 * np.log2(1 + self.A_signal[i] / (AB_interference[i] + (150000 * self.sig2)))
 
-        A_C_SUM = 0
+        A_C_SUM = 0.0
         for i in range(len(A_C)):
             A_C_SUM += A_C[i]
 
         for i in range(self.numB):
             self.B_signal[i] = \
-                10 ** (0.1 * (self.B_power_list[Power_select[i]] - self.pathlossB[
-                    i] + self.B_Ant_G - self.B_Noise_g))
+                10 ** (0.1 * (self.B_power_list[Power_select[i]] - self.pathlossB[i] + self.B_Ant_G - self.B_Noise_g))
 
             self.BB_interference[i] =   10 ** (0.1 * (self.A_power_dB +
                               self.A_Ant_G - self.pathlossA_B[i,RB_selecet[i]] -
-                              self.A_Noise_g))
+                              self.A_Noise_g)) #这里就相当于重新赋值了
 
             indexes = np.argwhere(RB_selecet == i)  # 返回了一个一维数组,里面的元素也应该就是整数
             indexes_temp = np.zeros(len(indexes), dtype=int)
@@ -331,18 +392,23 @@ class ENVIRONMENT:
                                       self.B_Ant_G -
                                       self.B_Noise_g))
 
-        self.B_interference = self.BB_interference + self.sig2
+        self.B_interference = self.BB_interference
 
         B_C = np.zeros((self.numB))
         for i in range(len(B_C)):
-            B_C[i] = 150 * np.log2(1 + self.B_signal[i] / (self.B_interference[i] + self.sig2))
+            B_C[i] = 100 * np.log2(1 + self.B_signal[i] / (self.B_interference[i] + (150000 * self.sig2)))
 
-        B_C_SUM = 0
+        B_C_SUM = 0.0
         for i in range(len(B_C)):
             B_C_SUM += B_C[i]
 
-        lamd = 0.1
-        reward = A_C_SUM + lamd * B_C_SUM
+        lamd = 1
+        reward = 0*A_C_SUM + lamd * B_C_SUM
+
+        print("A_C is:")
+        print(A_C)
+        print("B_C is:")
+        print(B_C)
 
         print("A_C_SUM and B_C_SUM is:%d bit/s, %d bit/s" % (A_C_SUM, B_C_SUM))
         reward = reward
